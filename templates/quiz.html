@@ -4,159 +4,338 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Slack 영단어 퀴즈</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f0f4f8; color: #2d3748; }
+    @font-face {
+      font-family: 'Gellix';
+      src: local('Gellix'), local('Inter'), local('SF Pro Display');
+    }
 
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Gellix', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #F7F7F7;
+      color: #0D0D0D;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* HEADER */
     header {
-      background: #4a154b;
-      color: #fff;
-      padding: 20px 32px;
+      background: #FFFFFF;
+      border-bottom: 1px solid #E0E0E0;
+      padding: 0 32px;
+      height: 64px;
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
-    header a { color: #fff; text-decoration: none; font-size: 0.9rem; opacity: .75; }
-    header a:hover { opacity: 1; }
-    header .date { font-size: 0.9rem; opacity: .75; }
-
-    .container { max-width: 600px; margin: 48px auto; padding: 0 16px; }
-
-    .progress-bar-wrap {
-      height: 6px;
-      background: #e2e8f0;
-      border-radius: 3px;
-      margin-bottom: 32px;
-      overflow: hidden;
+    .header-back {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #5E5E5E;
+      text-decoration: none;
+      transition: color 0.15s;
     }
-    .progress-bar {
+    .header-back:hover { color: #0D0D0D; }
+    .header-date {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: #A6A6A6;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* PROGRESS */
+    .progress-track {
+      height: 4px;
+      background: #ECECEC;
+      width: 100%;
+    }
+    .progress-fill {
       height: 100%;
-      background: #4a154b;
-      border-radius: 3px;
-      transition: width .4s ease;
+      background: #6210CC;
+      transition: width 0.4s ease;
     }
 
+    /* LAYOUT */
+    .container {
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 48px 16px;
+    }
+
+    /* PROGRESS LABEL */
+    .progress-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .progress-label .step {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: #A6A6A6;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .progress-label .step-count {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: #6210CC;
+    }
+
+    /* QUIZ CARD */
     .card {
-      background: #fff;
-      border-radius: 14px;
-      padding: 36px 32px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.10);
+      background: #FFFFFF;
+      border: 1px solid #E0E0E0;
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.06);
     }
 
     .question-meta {
-      font-size: 0.8rem;
-      color: #a0aec0;
-      margin-bottom: 10px;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: #A6A6A6;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 12px;
     }
+
     .word {
-      font-size: 2.2rem;
-      font-weight: 800;
-      color: #4a154b;
+      font-size: 40px;
+      font-weight: 600;
+      color: #0D0D0D;
+      letter-spacing: -1.5px;
+      line-height: 1.1;
       margin-bottom: 32px;
     }
 
-    .options { display: flex; flex-direction: column; gap: 12px; }
-    .option {
-      padding: 14px 20px;
-      border: 2px solid #e2e8f0;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 0.95rem;
-      transition: border-color .15s, background .15s;
-      text-align: left;
-      background: #fff;
-      color: #2d3748;
+    /* OPTIONS */
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
-    .option:hover:not(:disabled) { border-color: #4a154b; background: #faf5fb; }
-    .option.correct  { border-color: #38a169; background: #f0fff4; color: #276749; }
-    .option.wrong    { border-color: #e53e3e; background: #fff5f5; color: #c53030; }
+    .option {
+      padding: 14px 16px;
+      border: 1px solid #E0E0E0;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 400;
+      color: #0D0D0D;
+      background: #FFFFFF;
+      text-align: left;
+      transition: border-color 0.15s, background 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .option .opt-idx {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: #A6A6A6;
+      width: 20px;
+      flex-shrink: 0;
+    }
+    .option:hover:not(:disabled) {
+      border-color: #6210CC;
+      background: #F7F7F7;
+    }
+    .option:hover:not(:disabled) .opt-idx { color: #6210CC; }
+
+    .option.correct {
+      border-color: #019C6E;
+      background: #C5EAD2;
+      color: #019C6E;
+    }
+    .option.correct .opt-idx { color: #019C6E; }
+
+    .option.wrong {
+      border-color: #BF0711;
+      background: #FFD9DD;
+      color: #BF0711;
+    }
+    .option.wrong .opt-idx { color: #BF0711; }
+
     .option:disabled { cursor: default; }
 
+    /* FEEDBACK */
     .feedback {
-      margin-top: 20px;
-      padding: 14px 18px;
-      border-radius: 10px;
-      font-size: 0.9rem;
+      margin-top: 16px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 400;
       display: none;
+      border-left: 3px solid transparent;
     }
     .feedback.show { display: block; }
-    .feedback.correct { background: #f0fff4; color: #276749; border-left: 4px solid #38a169; }
-    .feedback.wrong   { background: #fff5f5; color: #c53030; border-left: 4px solid #e53e3e; }
-    .feedback .example { margin-top: 8px; color: #4a5568; font-style: italic; }
+    .feedback.correct {
+      background: #C5EAD2;
+      color: #019C6E;
+      border-left-color: #019C6E;
+    }
+    .feedback.wrong {
+      background: #FFD9DD;
+      color: #BF0711;
+      border-left-color: #BF0711;
+    }
+    .feedback .feedback-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .feedback .example {
+      font-size: 13px;
+      color: #5E5E5E;
+      font-style: italic;
+      margin-top: 8px;
+    }
 
+    /* NEXT BUTTON */
     .btn-next {
-      margin-top: 24px;
+      margin-top: 16px;
       width: 100%;
-      padding: 14px;
-      background: #4a154b;
-      color: #fff;
-      font-size: 1rem;
-      font-weight: 700;
+      padding: 14px 24px;
+      background: #6210CC;
+      color: #FFFFFF;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
       border: none;
-      border-radius: 10px;
+      border-radius: 8px;
       cursor: pointer;
       display: none;
-      transition: background .15s;
+      transition: background 0.15s;
+      letter-spacing: -0.2px;
     }
-    .btn-next:hover { background: #611f69; }
+    .btn-next:hover { background: #4B11A1; }
+    .btn-next:active { background: #350C73; }
     .btn-next.show { display: block; }
 
-    /* 결과 화면 */
+    /* RESULT */
     #result { display: none; text-align: center; }
     #result.show { display: block; }
-    .score-circle {
-      width: 120px;
-      height: 120px;
+
+    .score-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 32px;
+    }
+    .score-ring {
+      width: 112px;
+      height: 112px;
       border-radius: 50%;
-      border: 6px solid #4a154b;
+      border: 3px solid #DCDBFF;
+      background: #F7F7F7;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      margin: 0 auto 24px;
+      margin-bottom: 24px;
+      position: relative;
     }
-    .score-num { font-size: 2.5rem; font-weight: 800; color: #4a154b; line-height: 1; }
-    .score-denom { font-size: 1rem; color: #718096; }
-    .result-msg { font-size: 1.3rem; font-weight: 700; margin-bottom: 8px; }
-    .result-sub { color: #718096; font-size: 0.95rem; margin-bottom: 32px; }
+    .score-ring::before {
+      content: '';
+      position: absolute;
+      inset: 4px;
+      border-radius: 50%;
+      border: 3px solid #6210CC;
+    }
+    .score-num {
+      font-size: 40px;
+      font-weight: 600;
+      color: #6210CC;
+      letter-spacing: -2px;
+      line-height: 1;
+    }
+    .score-denom {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 12px;
+      color: #A6A6A6;
+      margin-top: 2px;
+    }
+    .result-msg {
+      font-size: 22px;
+      font-weight: 600;
+      color: #0D0D0D;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+    }
+    .result-sub {
+      font-size: 14px;
+      color: #5E5E5E;
+      margin-bottom: 32px;
+    }
+    .result-actions {
+      display: flex;
+      gap: 8px;
+    }
     .btn-home {
-      display: inline-block;
-      padding: 12px 32px;
-      background: #4a154b;
-      color: #fff;
-      border-radius: 10px;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 24px;
+      background: #6210CC;
+      color: #FFFFFF;
+      border-radius: 8px;
       text-decoration: none;
-      font-weight: 700;
-      transition: background .15s;
-      margin: 0 6px;
+      font-size: 14px;
+      font-weight: 600;
+      transition: background 0.15s;
     }
-    .btn-home:hover { background: #611f69; }
+    .btn-home:hover { background: #4B11A1; }
     .btn-retry {
-      display: inline-block;
-      padding: 12px 32px;
-      background: #fff;
-      color: #4a154b;
-      border: 2px solid #4a154b;
-      border-radius: 10px;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 24px;
+      background: #FFFFFF;
+      color: #6210CC;
+      border: 1px solid #6210CC;
+      border-radius: 8px;
       text-decoration: none;
-      font-weight: 700;
-      transition: background .15s;
-      margin: 0 6px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
       cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
     }
-    .btn-retry:hover { background: #faf5fb; }
+    .btn-retry:hover {
+      background: #DCDBFF;
+      border-color: #4B11A1;
+    }
   </style>
 </head>
 <body>
 
 <header>
-  <a href="/">← 홈으로</a>
-  <span class="date">{{ today }}</span>
+  <a href="/" class="header-back">← 홈으로</a>
+  <span class="header-date">{{ today }}</span>
 </header>
+<div class="progress-track">
+  <div class="progress-fill" id="progress" style="width:0%"></div>
+</div>
 
 <div class="container">
-  <div class="progress-bar-wrap">
-    <div class="progress-bar" id="progress" style="width:0%"></div>
+
+  <div class="progress-label">
+    <span class="step">Question</span>
+    <span class="step-count" id="step-count">— / —</span>
   </div>
 
   <!-- 퀴즈 카드 -->
@@ -165,26 +344,32 @@
     <div class="word" id="word"></div>
     <div class="options" id="options"></div>
     <div class="feedback" id="feedback">
-      <div id="feedback-text"></div>
+      <div class="feedback-title" id="feedback-text"></div>
       <div class="example" id="feedback-example"></div>
     </div>
-    <button class="btn-next" id="btn-next" onclick="nextQuestion()">다음 →</button>
+    <button class="btn-next" id="btn-next" onclick="nextQuestion()">다음 문제 →</button>
   </div>
 
   <!-- 결과 화면 -->
   <div class="card" id="result">
-    <div class="score-circle">
-      <span class="score-num" id="score-num"></span>
-      <span class="score-denom" id="score-denom"></span>
+    <div class="score-wrap">
+      <div class="score-ring">
+        <span class="score-num" id="score-num"></span>
+        <span class="score-denom" id="score-denom"></span>
+      </div>
+      <div class="result-msg" id="result-msg"></div>
+      <div class="result-sub" id="result-sub"></div>
     </div>
-    <div class="result-msg" id="result-msg"></div>
-    <div class="result-sub" id="result-sub"></div>
-    <a href="/" class="btn-home">홈으로</a>
-    <a href="/quiz" class="btn-retry">다시 풀기</a>
+    <div class="result-actions">
+      <a href="/" class="btn-home">홈으로</a>
+      <a href="/quiz" class="btn-retry">다시 풀기</a>
+    </div>
   </div>
+
 </div>
 
 <script>
+  const LABELS = ['A', 'B', 'C', 'D'];
   let currentData = null;
 
   async function loadQuestion() {
@@ -197,7 +382,8 @@
     }
 
     currentData = data;
-    document.getElementById("meta").textContent = `${data.index} / ${data.total}`;
+    document.getElementById("meta").textContent = `문제 ${data.index} / ${data.total}`;
+    document.getElementById("step-count").textContent = `${data.index} / ${data.total}`;
     document.getElementById("word").textContent = data.word;
     document.getElementById("progress").style.width = `${(data.index - 1) / data.total * 100}%`;
 
@@ -206,7 +392,7 @@
     data.options.forEach((opt, i) => {
       const btn = document.createElement("button");
       btn.className = "option";
-      btn.textContent = opt;
+      btn.innerHTML = `<span class="opt-idx">${LABELS[i]}</span>${opt}`;
       btn.onclick = () => submitAnswer(i);
       optionsEl.appendChild(btn);
     });
@@ -216,7 +402,6 @@
   }
 
   async function submitAnswer(answerIdx) {
-    // 선택 직후 버튼 비활성화
     document.querySelectorAll(".option").forEach(b => b.disabled = true);
 
     const res = await fetch("/api/answer", {
@@ -233,7 +418,7 @@
     const feedback = document.getElementById("feedback");
     feedback.className = `feedback show ${data.correct ? "correct" : "wrong"}`;
     document.getElementById("feedback-text").textContent =
-      data.correct ? "정답입니다!" : `오답. 정답: ${data.meaning}`;
+      data.correct ? "정답입니다!" : `오답 — 정답: ${data.meaning}`;
 
     const ex = data.example;
     const exEl = document.getElementById("feedback-example");
@@ -254,12 +439,13 @@
     document.getElementById("score-num").textContent = score;
     document.getElementById("score-denom").textContent = `/ ${total}`;
     document.getElementById("progress").style.width = "100%";
+    document.getElementById("step-count").textContent = `${total} / ${total}`;
 
     const msgs = [
-      [total,     "완벽합니다!", "모든 단어의 뜻을 알고 있어요!"],
-      [total*.7,  "잘했어요!",   "조금만 더 하면 완벽할 거예요."],
-      [total*.4,  "좋아요!",     "꾸준히 하면 금방 늘어요."],
-      [0,         "파이팅!",     "매일 조금씩 도전해봐요."],
+      [total,    "완벽합니다!",  "모든 단어의 뜻을 정확히 알고 있어요."],
+      [total*.7, "잘했어요!",   "조금만 더 하면 완벽할 거예요."],
+      [total*.4, "좋아요!",     "꾸준히 하면 금방 늘어요."],
+      [0,        "파이팅!",     "매일 조금씩 도전해봐요."],
     ];
     const [, msg, sub] = msgs.find(([min]) => score >= min);
     document.getElementById("result-msg").textContent = msg;

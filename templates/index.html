@@ -4,109 +4,328 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Slack 영단어 퀴즈</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f0f4f8; color: #2d3748; }
+    @font-face {
+      font-family: 'Gellix';
+      src: local('Gellix'), local('Inter'), local('SF Pro Display');
+    }
 
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Gellix', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #F7F7F7;
+      color: #0D0D0D;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* HEADER */
     header {
-      background: #4a154b;
-      color: #fff;
-      padding: 20px 32px;
+      background: #FFFFFF;
+      border-bottom: 1px solid #E0E0E0;
+      padding: 0 32px;
+      height: 64px;
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
-    header h1 { font-size: 1.4rem; font-weight: 700; }
-    header .date { font-size: 0.9rem; opacity: .75; }
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .header-logo .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: #6210CC;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 16px;
+    }
+    .header-logo h1 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #0D0D0D;
+      letter-spacing: -0.2px;
+    }
+    .header-date {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: #A6A6A6;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
 
-    .container { max-width: 760px; margin: 40px auto; padding: 0 16px; }
+    /* LAYOUT */
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 48px 16px;
+    }
 
+    /* PAGE TITLE */
+    .page-title {
+      margin-bottom: 32px;
+    }
+    .page-title .label {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: #6210CC;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 8px;
+    }
+    .page-title h2 {
+      font-size: 32px;
+      font-weight: 600;
+      letter-spacing: -1px;
+      color: #0D0D0D;
+      line-height: 1.2;
+    }
+
+    /* STATS */
     .stats {
       display: flex;
-      gap: 12px;
-      margin-bottom: 24px;
+      gap: 16px;
+      margin-bottom: 32px;
     }
     .stat-card {
       flex: 1;
-      background: #fff;
-      border-radius: 10px;
-      padding: 16px 20px;
-      text-align: center;
-      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+      background: #FFFFFF;
+      border: 1px solid #E0E0E0;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 1px 0 rgba(0,0,0,0.04);
     }
-    .stat-card .num { font-size: 2rem; font-weight: 700; color: #4a154b; }
-    .stat-card .label { font-size: 0.8rem; color: #718096; margin-top: 4px; }
+    .stat-card .num {
+      font-size: 36px;
+      font-weight: 600;
+      color: #6210CC;
+      letter-spacing: -1px;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .stat-card .label {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: #A6A6A6;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
 
-    .btn-quiz {
-      display: block;
-      width: 100%;
-      padding: 16px;
-      background: #4a154b;
-      color: #fff;
-      font-size: 1.1rem;
-      font-weight: 700;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      text-align: center;
-      text-decoration: none;
-      margin-bottom: 28px;
-      transition: background .15s;
-    }
-    .btn-quiz:hover { background: #611f69; }
-
-    .word-list {
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 1px 4px rgba(0,0,0,.08);
-      overflow: hidden;
-    }
-    .word-list h2 {
-      padding: 16px 20px;
-      font-size: 1rem;
-      color: #4a154b;
-      border-bottom: 1px solid #e2e8f0;
-    }
-    .word-row {
+    /* TOTAL CARD with Slack button */
+    .stat-card.total-card {
       display: flex;
-      align-items: baseline;
-      padding: 12px 20px;
-      border-bottom: 1px solid #f0f4f8;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .total-card .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .btn-slack {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: #FFFFFF;
+      color: #6210CC;
+      border: 1px solid #6210CC;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s;
+      flex-shrink: 0;
+    }
+    .btn-slack:hover:not(:disabled) { background: #DCDBFF; }
+    .btn-slack:disabled { opacity: 0.5; cursor: not-allowed; }
+    .slack-status {
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: 6px;
+      padding: 8px 12px;
+      display: none;
+      line-height: 1.5;
+    }
+    .slack-status.show   { display: block; }
+    .slack-status.success { background: #C5EAD2; color: #019C6E; }
+    .slack-status.empty   { background: #FFF2B6; color: #AA5D04; }
+    .slack-status.error   { background: #FFD9DD; color: #BF0711; }
+
+    /* CTA BUTTON */
+    .btn-quiz {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 16px 24px;
+      background: #6210CC;
+      color: #FFFFFF;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      text-decoration: none;
+      margin-bottom: 32px;
+      transition: background 0.15s;
+      box-shadow: 0 1px 0 rgba(0,0,0,0.08);
+    }
+    .btn-quiz:hover { background: #4B11A1; }
+    .btn-quiz:active { background: #350C73; }
+
+    /* WORD LIST */
+    .word-list {
+      background: #FFFFFF;
+      border: 1px solid #E0E0E0;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+    }
+    .word-list-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid #E0E0E0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .word-list-header h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #0D0D0D;
+    }
+    .word-list-header .count-badge {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: #6210CC;
+      background: #DCDBFF;
+      padding: 2px 8px;
+      border-radius: 20px;
+      letter-spacing: 0.04em;
+    }
+
+    /* TABLE HEADER */
+    .word-table-head {
+      display: flex;
+      align-items: center;
+      padding: 8px 24px;
+      background: #F7F7F7;
+      border-bottom: 1px solid #E0E0E0;
       gap: 16px;
     }
+    .col-num  { width: 32px; flex-shrink: 0; }
+    .col-en   { width: 180px; flex-shrink: 0; }
+    .col-ko   { flex: 1; }
+    .word-table-head span {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      color: #A6A6A6;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .word-row {
+      display: flex;
+      align-items: center;
+      padding: 12px 24px;
+      border-bottom: 1px solid #F7F7F7;
+      gap: 16px;
+      transition: background 0.1s;
+    }
     .word-row:last-child { border-bottom: none; }
-    .word-num { width: 24px; color: #a0aec0; font-size: 0.85rem; flex-shrink: 0; }
-    .word-en { width: 180px; font-weight: 600; color: #2d3748; flex-shrink: 0; }
-    .word-ko { color: #718096; font-size: 0.9rem; }
+    .word-row:hover { background: #F7F7F7; }
+
+    .word-num {
+      width: 32px;
+      flex-shrink: 0;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 12px;
+      font-weight: 400;
+      color: #A6A6A6;
+    }
+    .word-en {
+      width: 180px;
+      flex-shrink: 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: #0D0D0D;
+    }
+    .word-ko {
+      flex: 1;
+      font-size: 14px;
+      font-weight: 400;
+      color: #5E5E5E;
+    }
   </style>
 </head>
 <body>
 
 <header>
-  <h1>Slack 영단어 퀴즈</h1>
-  <span class="date">{{ today }}</span>
+  <div class="header-logo">
+    <div class="logo-icon">W</div>
+    <h1>영단어 퀴즈</h1>
+  </div>
+  <span class="header-date">{{ today }}</span>
 </header>
 
 <div class="container">
+
+  <div class="page-title">
+    <div class="label">Daily Vocabulary</div>
+    <h2>오늘의 단어 학습</h2>
+  </div>
+
   <div class="stats">
-    <div class="stat-card">
-      <div class="num">{{ total }}</div>
-      <div class="label">전체 단어</div>
+    <div class="stat-card total-card">
+      <div class="card-top">
+        <div>
+          <div class="num">{{ total }}</div>
+          <div class="label">전체 단어</div>
+        </div>
+        <button class="btn-slack" id="btn-slack" onclick="fetchSlack()">
+          슬랙에서 가져오기
+        </button>
+      </div>
+      <div class="slack-status" id="slack-status"></div>
     </div>
     <div class="stat-card">
-      <div class="num">{{ base_count }}</div>
-      <div class="label">기본 단어</div>
-    </div>
-    <div class="stat-card">
-      <div class="num">{{ slack_count }}</div>
-      <div class="label">Slack 수집 단어</div>
+      <div class="num">{{ quiz_count }}</div>
+      <div class="label">학습 단어</div>
     </div>
   </div>
 
-  <a href="/quiz" class="btn-quiz">오늘의 퀴즈 시작 →</a>
+  <a href="/quiz" class="btn-quiz">
+    오늘의 퀴즈 시작
+    <span>→</span>
+  </a>
 
   <div class="word-list">
-    <h2>오늘의 단어 {{ daily_words|length }}개</h2>
+    <div class="word-list-header">
+      <h3>오늘의 단어</h3>
+      <span class="count-badge">{{ daily_words|length }}개</span>
+    </div>
+    <div class="word-table-head">
+      <span class="col-num">#</span>
+      <span class="col-en">English</span>
+      <span class="col-ko">Korean</span>
+    </div>
     {% for entry in daily_words %}
     <div class="word-row">
       <span class="word-num">{{ loop.index }}</span>
@@ -115,7 +334,44 @@
     </div>
     {% endfor %}
   </div>
+
 </div>
+
+<script>
+  async function fetchSlack() {
+    const btn = document.getElementById('btn-slack');
+    const status = document.getElementById('slack-status');
+
+    btn.disabled = true;
+    btn.textContent = '수집 중...';
+    status.className = 'slack-status';
+
+    try {
+      const res = await fetch('/api/slack-fetch', { method: 'POST' });
+      const data = await res.json();
+
+      status.textContent = data.message;
+      if (data.status === 'added') {
+        status.className = 'slack-status show success';
+        // 전체 단어 수 업데이트를 위해 페이지 새로고침
+        setTimeout(() => location.reload(), 1500);
+      } else if (data.status === 'no_messages' || data.status === 'no_words') {
+        status.className = 'slack-status show empty';
+        btn.disabled = false;
+        btn.textContent = '슬랙에서 가져오기';
+      } else {
+        status.className = 'slack-status show error';
+        btn.disabled = false;
+        btn.textContent = '슬랙에서 가져오기';
+      }
+    } catch (e) {
+      status.textContent = '요청 중 오류가 발생했습니다.';
+      status.className = 'slack-status show error';
+      btn.disabled = false;
+      btn.textContent = '슬랙에서 가져오기';
+    }
+  }
+</script>
 
 </body>
 </html>

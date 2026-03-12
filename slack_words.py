@@ -16,6 +16,8 @@ cron 예시 (매일 오전 9시 실행):
     0 9 * * * cd /path/to/project && python3 slack_words.py
 """
 
+from __future__ import annotations
+
 import json
 import os
 import re

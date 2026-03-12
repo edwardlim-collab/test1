@@ -1,0 +1,52 @@
+[
+    {
+        "word": "migration",
+        "meaning": "마이그레이션, 시스템·데이터 이전 작업",
+        "example": "We're migrating our MDM to a new system — please complete it ASAP."
+    },
+    {
+        "word": "deprecation",
+        "meaning": "지원 종료, 기존 기능·서비스 사용 중단",
+        "example": "The VPN deprecation means we'll switch to Twingate starting September 25th."
+    },
+    {
+        "word": "seamless",
+        "meaning": "끊김 없는, 매끄러운, 원활한",
+        "example": "Our IT team worked to ensure this is a seamless one-click experience for you."
+    },
+    {
+        "word": "tenacity",
+        "meaning": "끈기, 불굴의 의지, 집념",
+        "example": "We made the impossible a reality through sheer teamwork and tenacity."
+    },
+    {
+        "word": "amplify",
+        "meaning": "증폭시키다, 확산시키다, 강화하다",
+        "example": "Please repost our launch post to amplify the impact."
+    },
+    {
+        "word": "velocity",
+        "meaning": "속도, 추진력 (팀의 업무 처리 속도)",
+        "example": "A key lighthouse customer win unlocks the team's velocity and quality."
+    },
+    {
+        "word": "funnel",
+        "meaning": "유입 경로, 퍼널 (잠재 고객이 고객이 되는 과정)",
+        "example": "Our H1 priority is driving awareness and filling the funnel."
+    },
+    {
+        "word": "unveil",
+        "meaning": "공개하다, 발표하다, 베일을 벗기다",
+        "example": "We'll unveil the new brand name at the SF event at 3pm PT."
+    },
+    {
+        "word": "harness",
+        "meaning": "활용하다, 이용하다 (힘·기술 등을 효과적으로)",
+        "example": "It's important that we lean in hard to harness the power of AI."
+    },
+    {
+        "word": "archetype",
+        "meaning": "원형, 전형적인 유형 (특정 역할의 대표적 모델)",
+        "example": "We're recruiting new employee archetypes who are natively AI-first."
+    }
+]

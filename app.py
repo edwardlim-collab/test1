@@ -7,19 +7,24 @@
 """
 
 import json
-import random
+import os
+import time
 from datetime import date
 from pathlib import Path
 
 from flask import Flask, jsonify, render_template, request, session
 
 from quiz import build_options, get_daily_words, load_all_words
+from slack_words import extract_candidate_words, fetch_definition, load_existing_words, load_slack_words, save_slack_words
 from words import WORDS
 
 app = Flask(__name__)
 app.secret_key = "slack-word-quiz-secret"
 
 WORDS_SLACK_PATH = Path(__file__).parent / "words_slack.json"
+SLACK_CACHE_PATH = Path(__file__).parent / "slack_messages_cache.json"
+DEFINITION_API_DELAY = 0.3
+TARGET_NEW_WORDS = 10
 
 
 def get_word_pool():
@@ -27,21 +32,69 @@ def get_word_pool():
     return all_words, get_daily_words(all_words)
 
 
+def load_cached_messages():
+    """slack_messages_cache.json에서 메시지와 수집 시각을 읽습니다."""
+    if not SLACK_CACHE_PATH.exists():
+        return [], None
+    with open(SLACK_CACHE_PATH, encoding="utf-8") as f:
+        data = json.load(f)
+    fetched_at = data.get("fetched_at")
+    messages = data.get("messages", [])
+    return messages, fetched_at
+
+
 # ── 라우트 ────────────────────────────────────────────────────────────────────
 
 @app.route("/")
 def index():
     all_words, daily_words = get_word_pool()
-    slack_count = len(all_words) - len(WORDS)
     today = date.today().strftime("%Y년 %m월 %d일")
     return render_template(
         "index.html",
         today=today,
         daily_words=daily_words,
         total=len(all_words),
-        base_count=len(WORDS),
-        slack_count=slack_count,
+        quiz_count=len(daily_words),
     )
+
+
+@app.route("/api/slack-fetch", methods=["POST"])
+def slack_fetch():
+    messages, fetched_at = load_cached_messages()
+
+    if not messages:
+        msg = "최근 7일간 #announcements에 새 메시지가 없습니다."
+        if fetched_at:
+            msg += f" (마지막 수집: {fetched_at[:10]})"
+        return jsonify({"status": "no_messages", "message": msg})
+
+    existing = load_existing_words()
+    candidates = extract_candidate_words(messages, existing)
+    if not candidates:
+        return jsonify({"status": "no_words", "message": "메시지에서 추가할 새 단어를 찾지 못했습니다."})
+
+    slack_words = load_slack_words()
+    added_words = []
+    for word in candidates:
+        if len(added_words) >= TARGET_NEW_WORDS:
+            break
+        entry = fetch_definition(word)
+        if entry:
+            slack_words.append(entry)
+            existing.add(word)
+            added_words.append(entry["word"])
+            time.sleep(DEFINITION_API_DELAY)
+
+    if not added_words:
+        return jsonify({"status": "no_words", "message": "사전에서 정의를 찾을 수 있는 새 단어가 없습니다."})
+
+    save_slack_words(slack_words)
+    return jsonify({
+        "status": "added",
+        "count": len(added_words),
+        "words": added_words,
+        "message": f"{len(added_words)}개 단어가 추가됐습니다: {', '.join(added_words)}",
+    })
 
 
 @app.route("/quiz")
@@ -108,4 +161,5 @@ def submit_answer():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(debug=False, host="0.0.0.0", port=port)
