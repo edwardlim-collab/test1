@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Slack 영단어 퀴즈</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f0f4f8; color: #2d3748; }
+
+    header {
+      background: #4a154b;
+      color: #fff;
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    header a { color: #fff; text-decoration: none; font-size: 0.9rem; opacity: .75; }
+    header a:hover { opacity: 1; }
+    header .date { font-size: 0.9rem; opacity: .75; }
+
+    .container { max-width: 600px; margin: 48px auto; padding: 0 16px; }
+
+    .progress-bar-wrap {
+      height: 6px;
+      background: #e2e8f0;
+      border-radius: 3px;
+      margin-bottom: 32px;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      background: #4a154b;
+      border-radius: 3px;
+      transition: width .4s ease;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 36px 32px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.10);
+    }
+
+    .question-meta {
+      font-size: 0.8rem;
+      color: #a0aec0;
+      margin-bottom: 10px;
+    }
+    .word {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #4a154b;
+      margin-bottom: 32px;
+    }
+
+    .options { display: flex; flex-direction: column; gap: 12px; }
+    .option {
+      padding: 14px 20px;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: border-color .15s, background .15s;
+      text-align: left;
+      background: #fff;
+      color: #2d3748;
+    }
+    .option:hover:not(:disabled) { border-color: #4a154b; background: #faf5fb; }
+    .option.correct  { border-color: #38a169; background: #f0fff4; color: #276749; }
+    .option.wrong    { border-color: #e53e3e; background: #fff5f5; color: #c53030; }
+    .option:disabled { cursor: default; }
+
+    .feedback {
+      margin-top: 20px;
+      padding: 14px 18px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      display: none;
+    }
+    .feedback.show { display: block; }
+    .feedback.correct { background: #f0fff4; color: #276749; border-left: 4px solid #38a169; }
+    .feedback.wrong   { background: #fff5f5; color: #c53030; border-left: 4px solid #e53e3e; }
+    .feedback .example { margin-top: 8px; color: #4a5568; font-style: italic; }
+
+    .btn-next {
+      margin-top: 24px;
+      width: 100%;
+      padding: 14px;
+      background: #4a154b;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      display: none;
+      transition: background .15s;
+    }
+    .btn-next:hover { background: #611f69; }
+    .btn-next.show { display: block; }
+
+    /* 결과 화면 */
+    #result { display: none; text-align: center; }
+    #result.show { display: block; }
+    .score-circle {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      border: 6px solid #4a154b;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+    }
+    .score-num { font-size: 2.5rem; font-weight: 800; color: #4a154b; line-height: 1; }
+    .score-denom { font-size: 1rem; color: #718096; }
+    .result-msg { font-size: 1.3rem; font-weight: 700; margin-bottom: 8px; }
+    .result-sub { color: #718096; font-size: 0.95rem; margin-bottom: 32px; }
+    .btn-home {
+      display: inline-block;
+      padding: 12px 32px;
+      background: #4a154b;
+      color: #fff;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 700;
+      transition: background .15s;
+      margin: 0 6px;
+    }
+    .btn-home:hover { background: #611f69; }
+    .btn-retry {
+      display: inline-block;
+      padding: 12px 32px;
+      background: #fff;
+      color: #4a154b;
+      border: 2px solid #4a154b;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 700;
+      transition: background .15s;
+      margin: 0 6px;
+      cursor: pointer;
+    }
+    .btn-retry:hover { background: #faf5fb; }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="/">← 홈으로</a>
+  <span class="date">{{ today }}</span>
+</header>
+
+<div class="container">
+  <div class="progress-bar-wrap">
+    <div class="progress-bar" id="progress" style="width:0%"></div>
+  </div>
+
+  <!-- 퀴즈 카드 -->
+  <div class="card" id="quiz-card">
+    <div class="question-meta" id="meta"></div>
+    <div class="word" id="word"></div>
+    <div class="options" id="options"></div>
+    <div class="feedback" id="feedback">
+      <div id="feedback-text"></div>
+      <div class="example" id="feedback-example"></div>
+    </div>
+    <button class="btn-next" id="btn-next" onclick="nextQuestion()">다음 →</button>
+  </div>
+
+  <!-- 결과 화면 -->
+  <div class="card" id="result">
+    <div class="score-circle">
+      <span class="score-num" id="score-num"></span>
+      <span class="score-denom" id="score-denom"></span>
+    </div>
+    <div class="result-msg" id="result-msg"></div>
+    <div class="result-sub" id="result-sub"></div>
+    <a href="/" class="btn-home">홈으로</a>
+    <a href="/quiz" class="btn-retry">다시 풀기</a>
+  </div>
+</div>
+
+<script>
+  let currentData = null;
+
+  async function loadQuestion() {
+    const res = await fetch("/api/question");
+    const data = await res.json();
+
+    if (data.done) {
+      showResult(data.score, data.total);
+      return;
+    }
+
+    currentData = data;
+    document.getElementById("meta").textContent = `${data.index} / ${data.total}`;
+    document.getElementById("word").textContent = data.word;
+    document.getElementById("progress").style.width = `${(data.index - 1) / data.total * 100}%`;
+
+    const optionsEl = document.getElementById("options");
+    optionsEl.innerHTML = "";
+    data.options.forEach((opt, i) => {
+      const btn = document.createElement("button");
+      btn.className = "option";
+      btn.textContent = opt;
+      btn.onclick = () => submitAnswer(i);
+      optionsEl.appendChild(btn);
+    });
+
+    document.getElementById("feedback").className = "feedback";
+    document.getElementById("btn-next").className = "btn-next";
+  }
+
+  async function submitAnswer(answerIdx) {
+    // 선택 직후 버튼 비활성화
+    document.querySelectorAll(".option").forEach(b => b.disabled = true);
+
+    const res = await fetch("/api/answer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ answer: answerIdx }),
+    });
+    const data = await res.json();
+
+    const buttons = document.querySelectorAll(".option");
+    buttons[data.correct_idx].classList.add("correct");
+    if (!data.correct) buttons[answerIdx].classList.add("wrong");
+
+    const feedback = document.getElementById("feedback");
+    feedback.className = `feedback show ${data.correct ? "correct" : "wrong"}`;
+    document.getElementById("feedback-text").textContent =
+      data.correct ? "정답입니다!" : `오답. 정답: ${data.meaning}`;
+
+    const ex = data.example;
+    const exEl = document.getElementById("feedback-example");
+    exEl.textContent = ex ? `예문: ${ex}` : "";
+
+    document.getElementById("btn-next").className = "btn-next show";
+  }
+
+  function nextQuestion() {
+    loadQuestion();
+  }
+
+  function showResult(score, total) {
+    document.getElementById("quiz-card").style.display = "none";
+    const result = document.getElementById("result");
+    result.className = "card show";
+
+    document.getElementById("score-num").textContent = score;
+    document.getElementById("score-denom").textContent = `/ ${total}`;
+    document.getElementById("progress").style.width = "100%";
+
+    const msgs = [
+      [total,     "완벽합니다!", "모든 단어의 뜻을 알고 있어요!"],
+      [total*.7,  "잘했어요!",   "조금만 더 하면 완벽할 거예요."],
+      [total*.4,  "좋아요!",     "꾸준히 하면 금방 늘어요."],
+      [0,         "파이팅!",     "매일 조금씩 도전해봐요."],
+    ];
+    const [, msg, sub] = msgs.find(([min]) => score >= min);
+    document.getElementById("result-msg").textContent = msg;
+    document.getElementById("result-sub").textContent = sub;
+  }
+
+  loadQuestion();
+</script>
+</body>
+</html>
